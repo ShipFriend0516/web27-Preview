@@ -11,6 +11,7 @@ interface DataChannelMessage {
   status: boolean;
 }
 
+// 유저의 미디어 관련, 비디오, 오디오 트랙 가져오기 등의 기능을 지원하는 커스텀 훅
 const useMediaDevices = (dataChannels: DataChannels) => {
   // 유저의 미디어 장치 리스트
   const [userAudioDevices, setUserAudioDevices] = useState<MediaDeviceInfo[]>(
@@ -30,7 +31,6 @@ const useMediaDevices = (dataChannels: DataChannels) => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [videoLoading, setVideoLoading] = useState<boolean>(false);
-  // const [audioLoading, setAudioLoading] = useState<boolean>(false);
 
   // 미디어 온오프 상태
   const [isVideoOn, setIsVideoOn] = useState<boolean>(true);
@@ -64,6 +64,7 @@ const useMediaDevices = (dataChannels: DataChannels) => {
     getUserDevices();
   }, []);
 
+  // 클린업
   useEffect(() => {
     return () => {
       if (streamRef.current) {
@@ -77,7 +78,6 @@ const useMediaDevices = (dataChannels: DataChannels) => {
   const getMedia = async () => {
     try {
       if (streamRef.current) {
-        // 이미 스트림이 있으면 종료
         streamRef.current.getTracks().forEach((track) => {
           track.stop();
         });
@@ -93,8 +93,14 @@ const useMediaDevices = (dataChannels: DataChannels) => {
         videoStream = isVideoOn
           ? await navigator.mediaDevices.getUserMedia({
               video: selectedVideoDeviceId
-                ? { deviceId: selectedVideoDeviceId }
-                : true,
+                ? {
+                    deviceId: selectedVideoDeviceId,
+                  }
+                : {
+                    width: { ideal: 320 },
+                    height: { ideal: 480 },
+                    frameRate: 5,
+                  },
               audio: false,
             })
           : null;
@@ -102,8 +108,6 @@ const useMediaDevices = (dataChannels: DataChannels) => {
         console.warn("비디오 스트림을 가져오는데 실패했습니다:", videoError);
         setIsVideoOn(false);
       }
-
-      console.log(isVideoOn);
 
       try {
         audioStream = await navigator.mediaDevices.getUserMedia({
