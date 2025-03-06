@@ -114,7 +114,6 @@ const usePeerConnection = (socket: Socket) => {
 
         channel.onmessage = (e) => {
           const data = JSON.parse(e.data);
-          console.log(data);
           const { type, status } = data;
           if (type === "audio") {
             if (status) {

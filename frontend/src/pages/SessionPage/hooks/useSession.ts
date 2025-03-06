@@ -14,6 +14,7 @@ import useAuth from "@hooks/useAuth";
 import useStudy from "./useStudy";
 import useModal from "@hooks/useModal.ts";
 import useBlockNavigate from "@/pages/SessionPage/hooks/useBlockNavigate.ts";
+import useNetworkMonitoring from "@/pages/SessionPage/hooks/useNetworkMonitoring.ts";
 
 export const useSession = (sessionId: string) => {
   const { socket } = useSocket();
@@ -70,6 +71,7 @@ export const useSession = (sessionId: string) => {
     }
   }, [selectedAudioDeviceId, selectedVideoDeviceId, getMedia]);
 
+  useNetworkMonitoring({ peerConnections });
   usePeerConnectionCleanup(peerConnections);
   useMediaStreamCleanup(stream);
 
