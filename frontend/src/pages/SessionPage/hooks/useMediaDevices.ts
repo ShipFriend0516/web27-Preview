@@ -31,6 +31,7 @@ const useMediaDevices = (dataChannels: DataChannels) => {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [videoLoading, setVideoLoading] = useState<boolean>(false);
+  // const [audioLoading, setAudioLoading] = useState<boolean>(false);
 
   // 미디어 온오프 상태
   const [isVideoOn, setIsVideoOn] = useState<boolean>(true);
@@ -78,6 +79,7 @@ const useMediaDevices = (dataChannels: DataChannels) => {
   const getMedia = async () => {
     try {
       if (streamRef.current) {
+        // 이미 스트림이 있으면 종료
         streamRef.current.getTracks().forEach((track) => {
           track.stop();
         });
@@ -154,15 +156,15 @@ const useMediaDevices = (dataChannels: DataChannels) => {
       return navigator.mediaDevices.getUserMedia(
         mediaType === "audio"
           ? {
-              audio: selectedAudioDeviceId
-                ? { deviceId: selectedAudioDeviceId }
-                : true,
-            }
+            audio: selectedAudioDeviceId
+              ? { deviceId: selectedAudioDeviceId }
+              : true,
+          }
           : {
-              video: selectedVideoDeviceId
-                ? { deviceId: selectedVideoDeviceId }
-                : true,
-            }
+            video: selectedVideoDeviceId
+              ? { deviceId: selectedVideoDeviceId }
+              : true,
+          }
       );
     } catch (error) {
       console.error(error);
@@ -185,7 +187,6 @@ const useMediaDevices = (dataChannels: DataChannels) => {
       if (isVideoOn) {
         for (const videoTrack of stream.getVideoTracks()) {
           // 비디오 끄기
-
           videoTrack.stop();
 
           const blackTrack = createDummyStream();

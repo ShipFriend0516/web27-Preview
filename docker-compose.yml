@@ -24,3 +24,13 @@ services:
       - "8001:8001"
     volumes:
       - ./redis-data/:/data
+
+  coturn:
+    image: coturn/coturn:latest
+    container_name: coturn
+    ports:
+      - "3478:3478"
+      - "5349:5349"
+    volumes:
+      - ./turnserver.conf:/my/coturn.conf
+    command: -c /my/coturn.conf
