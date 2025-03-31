@@ -81,11 +81,11 @@ const useNetwork = () => {
       case 80:
         return "high";
       case 60:
-        return "middle";
+        return "medium";
       case 40:
         return "low";
       default:
-        return "very low";
+        return "very-low";
     }
   };
 

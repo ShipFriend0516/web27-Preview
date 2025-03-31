@@ -5,6 +5,16 @@ interface NetworkState {
   networkStats: NetworkStat[];
   updateNetworkStats: (stats: NetworkStat) => void;
   cleanUpNetworkStats: () => void;
+  currentNetworkQuality:
+    | "ultra"
+    | "high"
+    | "medium"
+    | "low"
+    | "very-low"
+    | null;
+  setCurrentNetworkQuality: (
+    quality: "ultra" | "high" | "medium" | "low" | "very-low" | null
+  ) => void;
 }
 
 const useNetworkStore = create<NetworkState>((set) => ({
@@ -17,6 +27,11 @@ const useNetworkStore = create<NetworkState>((set) => ({
     set(() => ({
       networkStats: [],
     })),
+  setCurrentNetworkQuality: (quality) =>
+    set(() => ({
+      currentNetworkQuality: quality,
+    })),
+  currentNetworkQuality: null,
 }));
 
 export default useNetworkStore;
