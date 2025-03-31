@@ -1,8 +1,9 @@
 import { GiNetworkBars } from "react-icons/gi";
-import useNetworkStore from "@stores/useNetworkStore.ts";
+import useNetwork from "@hooks/useNetwork.ts";
 
 const NetworkMonitor = () => {
-  const { networkStats } = useNetworkStore();
+  const { getNetworkStats, currentNetworkQuality } = useNetwork();
+  const networkStats = getNetworkStats();
 
   return (
     <div className={"flex flex-col gap-3 mt-4"}>
@@ -29,6 +30,9 @@ const NetworkMonitor = () => {
             <li className={"flex flex-col gap-1"}>
               대역폭:{" "}
               {(networkStats.at(-1)!.bandwidth / 1000 / 1000).toFixed(2)} mbps
+            </li>
+            <li className={"flex flex-col gap-1"}>
+              네트워크 품질: {currentNetworkQuality?.toUpperCase() || "N/A"}
             </li>
           </ul>
         )}
