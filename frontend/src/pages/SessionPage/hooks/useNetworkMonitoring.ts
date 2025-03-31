@@ -1,14 +1,9 @@
 import React, { useEffect, useRef } from "react";
+import { NetworkStat } from "@/types/network";
+import useNetworkStore from "@stores/useNetworkStore.ts";
 
 interface UseNetworkMonitoringHookProps {
   peerConnections: React.MutableRefObject<{ [p: string]: RTCPeerConnection }>;
-}
-
-interface NetworkStat {
-  jitter: number;
-  rtt: number;
-  packetsLossRate: number;
-  bandwidth: number;
 }
 
 const useNetworkMonitoring = ({
@@ -16,6 +11,15 @@ const useNetworkMonitoring = ({
 }: UseNetworkMonitoringHookProps) => {
   const MONITORING_INTERVAL = 5000;
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const { updateNetworkStats } = useNetworkStore();
+
+  const prevStats = useRef<{
+    timestamp: number;
+    totalBytes: number;
+  }>({
+    timestamp: 0,
+    totalBytes: 0,
+  });
 
   useEffect(() => {
     // 피어커넥션에 변동이 있을 때마다, 네트워크 모니터링
@@ -30,7 +34,7 @@ const useNetworkMonitoring = ({
 
   const initializeMonitoring = () => {
     const interval = setInterval(() => {
-      integrateStats();
+      if (Object.keys(peerConnections.current).length > 0) integrateStats();
     }, MONITORING_INTERVAL);
 
     intervalRef.current = interval;
@@ -77,6 +81,7 @@ const useNetworkMonitoring = ({
     integratedStats.bandwidth = sumOfStat.bandwidth / statPerPeer.length;
 
     console.log("네트워크 보고서", integratedStats);
+    updateNetworkStats(integratedStats);
     return integratedStats;
   };
 
@@ -98,7 +103,9 @@ const useNetworkMonitoring = ({
       bandwidth: 0,
     };
 
+    const currentTimestamp = Date.now();
     const stats = await peerConnection.getStats();
+
     for (const value of stats.values()) {
       if (value.type === "inbound-rtp") {
         if (value.mediaType === "video") {
@@ -106,29 +113,50 @@ const useNetworkMonitoring = ({
           networkStat.packetsLost = value.packetsLost;
           networkStat.packetsReceived = value.packetsReceived;
           networkStat.packetsLossRate =
-            value.packetsLost / value.packetsReceived;
+            value.packetsLost / (value.packetsReceived || 1); // 0으로 나누기 방지
         }
       } else if (value.type === "candidate-pair") {
         if (value.bytesSent > 0) {
           networkStat.rtt = value.currentRoundTripTime;
           networkStat.bytesReceived = value.bytesReceived;
         }
-      } else if (value.type === "remote-outbound-rtp") {
-        // console.log(value);
       } else if (value.type === "outbound-rtp") {
         networkStat.bytesSent = value.bytesSent;
       }
     }
 
+    // 현재 총 바이트
+    const currentTotalBytes = networkStat.bytesSent + networkStat.bytesReceived;
+
+    // 대역폭 계산 (bps)
+    if (prevStats.current.timestamp > 0) {
+      const byteDiff = currentTotalBytes - prevStats.current.totalBytes;
+      const timeDiffInSeconds =
+        (currentTimestamp - prevStats.current.timestamp) / 1000;
+
+      if (timeDiffInSeconds > 0) {
+        // 바이트를 비트로 변환 (1 바이트 = 8 비트)
+        const bitsPerSecond = (byteDiff * 8) / timeDiffInSeconds;
+
+        // const mbps = bitsPerSecond / 1000000;
+
+        networkStat.bandwidth = bitsPerSecond; // bps 단위로 저장
+      }
+    }
+
+    // 현재 값을 다음 계산을 위해 저장
+    prevStats.current = {
+      timestamp: currentTimestamp,
+      totalBytes: currentTotalBytes,
+    };
+
     return {
       jitter: networkStat.jitter,
       rtt: networkStat.rtt,
       packetsLossRate: networkStat.packetsLossRate,
-      bandwidth: networkStat.bytesSent + networkStat.bytesReceived,
+      bandwidth: networkStat.bandwidth, // bps 단위
     };
   };
-
-  return {};
 };
 
 export default useNetworkMonitoring;

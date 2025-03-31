@@ -98,11 +98,7 @@ const useMediaDevices = (dataChannels: DataChannels) => {
                 ? {
                     deviceId: selectedVideoDeviceId,
                   }
-                : {
-                    width: { ideal: 320 },
-                    height: { ideal: 480 },
-                    frameRate: 5,
-                  },
+                : true,
               audio: false,
             })
           : null;
@@ -156,15 +152,15 @@ const useMediaDevices = (dataChannels: DataChannels) => {
       return navigator.mediaDevices.getUserMedia(
         mediaType === "audio"
           ? {
-            audio: selectedAudioDeviceId
-              ? { deviceId: selectedAudioDeviceId }
-              : true,
-          }
+              audio: selectedAudioDeviceId
+                ? { deviceId: selectedAudioDeviceId }
+                : true,
+            }
           : {
-            video: selectedVideoDeviceId
-              ? { deviceId: selectedVideoDeviceId }
-              : true,
-          }
+              video: selectedVideoDeviceId
+                ? { deviceId: selectedVideoDeviceId }
+                : true,
+            }
       );
     } catch (error) {
       console.error(error);
