@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { NetworkStat } from "@/types/network";
-import useNetworkStore from "@stores/useNetworkStore.ts";
+import useNetwork from "@hooks/useNetwork.ts";
 
 interface UseNetworkMonitoringHookProps {
   peerConnections: React.MutableRefObject<{ [p: string]: RTCPeerConnection }>;
@@ -11,7 +11,8 @@ const useNetworkMonitoring = ({
 }: UseNetworkMonitoringHookProps) => {
   const MONITORING_INTERVAL = 5000;
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
-  const { updateNetworkStats } = useNetworkStore();
+  const { addNetworkStats, getNetworkQuality, updateNetworkQuality } =
+    useNetwork();
 
   const prevStats = useRef<{
     timestamp: number;
@@ -35,6 +36,13 @@ const useNetworkMonitoring = ({
   const initializeMonitoring = () => {
     const interval = setInterval(() => {
       if (Object.keys(peerConnections.current).length > 0) integrateStats();
+      if (Object.keys(peerConnections.current).length > 0) {
+        const quality = getNetworkQuality();
+        if (quality) {
+          console.log("현재 네트워크 점수" + quality);
+          updateNetworkQuality(quality);
+        }
+      }
     }, MONITORING_INTERVAL);
 
     intervalRef.current = interval;
@@ -81,7 +89,7 @@ const useNetworkMonitoring = ({
     integratedStats.bandwidth = sumOfStat.bandwidth / statPerPeer.length;
 
     console.log("네트워크 보고서", integratedStats);
-    updateNetworkStats(integratedStats);
+    addNetworkStats(integratedStats);
     return integratedStats;
   };
 

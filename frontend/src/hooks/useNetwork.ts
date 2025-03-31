@@ -6,17 +6,41 @@ import useNetworkStore from "@stores/useNetworkStore.ts";
 **/
 
 const useNetwork = () => {
-  const { networkStats } = useNetworkStore();
+  const {
+    networkStats,
+    updateNetworkStats,
+    setCurrentNetworkQuality,
+    currentNetworkQuality,
+  } = useNetworkStore();
 
   const getNetworkStats = () => {
     return networkStats;
   };
 
-  // 최근 N번의 네트워크 보고서의 평균으로 품질정보 계산
-  const calculateAverageStats = (count: number) => {
-    if (networkStats.length === 0) return null;
-    const recentStats = networkStats.slice(-count);
+  const addNetworkStats = (stats: {
+    jitter: number;
+    rtt: number;
+    packetsLossRate: number;
+    bandwidth: number;
+  }) => {
+    updateNetworkStats(stats);
+  };
 
+  const updateNetworkQuality = (
+    quality: "ultra" | "high" | "medium" | "low" | "very-low"
+  ) => {
+    setCurrentNetworkQuality(quality);
+  };
+
+  const calculateAverageStats = (count: number) => {
+    const networkStats = useNetworkStore.getState().networkStats;
+    if (networkStats.length === 0) return null;
+
+    // 실제 가용한 데이터 개수 계산
+    const availableCount = Math.min(count, networkStats.length);
+    const recentStats =
+      networkStats.length > count ? networkStats.slice(-count) : networkStats;
+    console.log("최근 5번", recentStats);
     const sum = recentStats.reduce(
       (acc, cur) => {
         acc.jitter += cur.jitter;
@@ -29,10 +53,10 @@ const useNetwork = () => {
     );
 
     const average = {
-      jitter: sum.jitter / count,
-      rtt: sum.rtt / count,
-      packetsLossRate: sum.packetsLossRate / count,
-      bandwidth: sum.bandwidth / count,
+      jitter: sum.jitter / availableCount,
+      rtt: sum.rtt / availableCount,
+      packetsLossRate: sum.packetsLossRate / availableCount,
+      bandwidth: sum.bandwidth / availableCount,
     };
 
     return average;
@@ -41,7 +65,7 @@ const useNetwork = () => {
   const getNetworkQuality = () => {
     const averageStats = calculateAverageStats(5);
     if (!averageStats) return null;
-
+    console.log("최근 5회 네트워크 보고서", averageStats);
     const { jitter, rtt, packetsLossRate, bandwidth } = averageStats;
 
     const bandwidthMbps = bandwidth / 1000 / 1000;
@@ -75,20 +99,26 @@ const useNetwork = () => {
     else if (jitterMs < 100) qualityScore += 2;
     else qualityScore += 0;
 
-    switch (qualityScore) {
-      case 100:
-        return "ultra";
-      case 80:
-        return "high";
-      case 60:
-        return "medium";
-      case 40:
-        return "low";
-      default:
-        return "very-low";
+    console.log("네트워크 품질 점수", qualityScore);
+    if (qualityScore > 80) {
+      return "ultra";
+    } else if (qualityScore > 60) {
+      return "high";
+    } else if (qualityScore > 40) {
+      return "medium";
+    } else if (qualityScore > 20) {
+      return "low";
+    } else {
+      return "very-low";
     }
   };
 
-  return { getNetworkStats, getNetworkQuality };
+  return {
+    getNetworkStats,
+    getNetworkQuality,
+    updateNetworkQuality,
+    addNetworkStats,
+    currentNetworkQuality,
+  };
 };
 export default useNetwork;

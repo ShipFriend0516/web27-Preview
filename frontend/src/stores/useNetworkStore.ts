@@ -20,9 +20,16 @@ interface NetworkState {
 const useNetworkStore = create<NetworkState>((set) => ({
   networkStats: [],
   updateNetworkStats: (stats: NetworkStat) =>
-    set((state) => ({
-      networkStats: [...state.networkStats, stats],
-    })),
+    set((state) => {
+      const newStat = { ...stats };
+
+      const updatedStats = [...state.networkStats, newStat];
+      if (updatedStats.length > 10) {
+        updatedStats.shift();
+      }
+
+      return { networkStats: updatedStats };
+    }),
   cleanUpNetworkStats: () =>
     set(() => ({
       networkStats: [],
