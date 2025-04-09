@@ -1,43 +1,61 @@
 interface IQualityPreset {
+  quality: Quality;
   video: {
     width: number;
     height: number;
     frameRate: number;
-    aspectRatio: number;
+    videoBitrate: number;
   };
 }
 
 interface IQualityPresetSet {
-  high: IQualityPreset;
-  middle: IQualityPreset;
-  low: IQualityPreset;
+  [key: string]: IQualityPreset;
 }
 
 export const QualityPreset: IQualityPresetSet = {
-  high: {
+  ultra: {
+    quality: "ultra",
     video: {
-      width: 1920,
-      height: 1080,
-      frameRate: 30,
-      aspectRatio: 4 / 3,
+      width: 1280,
+      height: 720,
+      frameRate: 60,
+      videoBitrate: 2500,
     },
   },
-
-  middle: {
+  high: {
+    quality: "high",
     video: {
-      width: 640,
+      width: 854,
       height: 480,
       frameRate: 30,
-      aspectRatio: 4 / 3,
+      videoBitrate: 1000,
     },
   },
-
+  medium: {
+    quality: "medium",
+    video: {
+      width: 640,
+      height: 360,
+      frameRate: 30,
+      videoBitrate: 600,
+    },
+  },
   low: {
+    quality: "low",
     video: {
       width: 320,
       height: 240,
       frameRate: 15,
-      aspectRatio: 4 / 3,
+      videoBitrate: 300,
+    },
+  },
+  "very-low": {
+    quality: "very-low",
+    video: {
+      width: 160,
+      height: 120,
+      frameRate: 5,
+      videoBitrate: 150,
     },
   },
 };
