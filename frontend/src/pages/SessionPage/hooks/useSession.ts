@@ -55,7 +55,7 @@ export const useSession = (sessionId: string) => {
     getMedia,
     getMediaStream,
     videoLoading,
-  } = useMediaDevices(dataChannels);
+  } = useMediaDevices(dataChannels, peerConnections);
 
   const { setShouldBlock } = useBlockNavigate();
 
