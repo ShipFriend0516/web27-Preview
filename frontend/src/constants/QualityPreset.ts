@@ -1,5 +1,5 @@
 interface IQualityPreset {
-  quality: Quality;
+  quality: "ultra" | "high" | "medium" | "low" | "very-low";
   video: {
     width: number;
     height: number;
