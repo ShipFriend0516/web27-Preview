@@ -3,6 +3,7 @@ import { FaUserGroup } from "react-icons/fa6";
 import { Socket } from "socket.io-client";
 import { TbCrown } from "react-icons/tb";
 import { Question } from "@/pages/SessionPage/types/session";
+import NetworkMonitor from "@components/log/NetworkMonitor.tsx";
 
 interface ParticipantsData {
   nickname: string;
@@ -91,6 +92,7 @@ const SessionSidebar = ({
               })}
             </ul>
           </div>
+          <NetworkMonitor />
         </div>
       </div>
     </div>
